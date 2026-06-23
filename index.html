@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Differentiable Physics for Graphics and AI, a SIGGRAPH 2026 Technical Workshop in Los Angeles.">
+  <title>DPGAI 2026 | Differentiable Physics for Graphics and AI</title>
+  <link rel="icon" href="assets/dpgai-icon.png">
+  <link rel="apple-touch-icon" href="assets/dpgai-icon.png">
+  <style>
+    :root {
+      --ink: #111827;
+      --muted: #5b6474;
+      --line: #e5e7eb;
+      --paper: #f8fafc;
+      --card: #ffffff;
+      --blue: #2364ff;
+      --cyan: #10b8c7;
+      --green: #52b788;
+      --sun: #f4b740;
+      --shadow: 0 20px 60px rgba(17, 24, 39, .12);
+      --radius: 8px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(229, 231, 235, .85);
+      background: rgba(248, 250, 252, .88);
+      backdrop-filter: blur(16px);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      min-height: 64px;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: url("assets/dpgai-icon.png") center / cover no-repeat;
+      box-shadow: 0 10px 28px rgba(35, 100, 255, .28);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-links a {
+      padding: 8px 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 650;
+      border-radius: 8px;
+    }
+
+    .nav-links a:hover {
+      color: var(--ink);
+      background: #eef2ff;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      min-height: calc(100vh - 64px);
+      display: grid;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(7, 12, 23, .92) 0%, rgba(7, 12, 23, .75) 42%, rgba(7, 12, 23, .18) 100%),
+        url("assets/dpga-collage.jpeg") center / cover no-repeat;
+      transform: scale(1.02);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 120px;
+      background: linear-gradient(180deg, rgba(248, 250, 252, 0), var(--paper));
+    }
+
+    .hero-inner {
+      position: relative;
+      z-index: 1;
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 64px 0 120px;
+      color: #fff;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      padding: 8px 12px;
+      border: 1px solid rgba(255, 255, 255, .26);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .1);
+      font-size: 13px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    h1 {
+      max-width: 920px;
+      margin: 0;
+      font-size: clamp(46px, 8vw, 86px);
+      line-height: .96;
+      letter-spacing: 0;
+    }
+
+    .hero-subtitle {
+      max-width: 700px;
+      margin: 24px 0 0;
+      color: rgba(255, 255, 255, .86);
+      font-size: clamp(18px, 2.4vw, 24px);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      padding: 0 18px;
+      border-radius: 8px;
+      border: 1px solid rgba(255, 255, 255, .24);
+      background: #fff;
+      color: #07101e;
+      font-weight: 800;
+    }
+
+    .button.secondary {
+      color: #fff;
+      background: rgba(255, 255, 255, .12);
+      backdrop-filter: blur(10px);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1px;
+      width: min(1160px, calc(100% - 32px));
+      margin: -78px auto 0;
+      position: relative;
+      z-index: 3;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    .stat {
+      background: rgba(255, 255, 255, .95);
+      padding: 22px;
+    }
+
+    .stat b {
+      display: block;
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 650;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    main {
+      width: min(1160px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    section {
+      padding: 82px 0;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      gap: 40px;
+      align-items: start;
+      margin-bottom: 30px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: clamp(30px, 4vw, 46px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .topic-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .topic {
+      min-height: 190px;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 12px 34px rgba(17, 24, 39, .06);
+    }
+
+    .topic .stripe {
+      width: 44px;
+      height: 5px;
+      margin-bottom: 18px;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan), var(--green));
+    }
+
+    .topic h3,
+    .schedule-item h3 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .topic p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .schedule {
+      display: grid;
+      gap: 10px;
+      border-left: 2px solid #c7d2fe;
+      margin-left: 10px;
+    }
+
+    .schedule-item {
+      display: grid;
+      grid-template-columns: 128px minmax(0, 1fr);
+      gap: 18px;
+      position: relative;
+      padding: 16px 18px 16px 28px;
+      margin-left: -2px;
+      border-left: 2px solid transparent;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: #fff;
+      border-top: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .schedule-item::before {
+      content: "";
+      position: absolute;
+      left: -8px;
+      top: 24px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--blue);
+      box-shadow: 0 0 0 5px #eef2ff;
+    }
+
+    .time {
+      color: var(--blue);
+      font-weight: 850;
+      font-size: 14px;
+      white-space: nowrap;
+    }
+
+    .schedule-item p {
+      margin: 5px 0 0;
+      color: var(--muted);
+    }
+
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .person {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--card);
+      box-shadow: 0 12px 34px rgba(17, 24, 39, .06);
+    }
+
+    .portrait,
+    .initials {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      display: grid;
+      place-items: center;
+      background: #e7eef8;
+      overflow: hidden;
+    }
+
+    .portrait img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 38%;
+    }
+
+    .initials {
+      color: #fff;
+      font-size: 48px;
+      font-weight: 850;
+      background:
+        linear-gradient(135deg, rgba(35, 100, 255, .96), rgba(16, 184, 199, .88)),
+        radial-gradient(circle at 80% 10%, rgba(244, 183, 64, .7), transparent 28%);
+    }
+
+    .person-body {
+      display: grid;
+      grid-template-rows: 28px 22px 18px 32px auto;
+      row-gap: 8px;
+      padding: 16px;
+    }
+
+    .person h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .name-link {
+      color: #31527a;
+      text-decoration: none;
+      transition: color .18s ease;
+    }
+
+    .name-link::after {
+      content: "↗";
+      display: inline-block;
+      margin-left: 5px;
+      color: #64748b;
+      font-size: .72em;
+      font-weight: 800;
+      transform: translateY(-1px);
+      transition: color .18s ease, transform .18s ease;
+    }
+
+    .name-link:hover,
+    .name-link:focus-visible {
+      color: #1f4f9f;
+      outline: none;
+    }
+
+    .name-link:hover::after,
+    .name-link:focus-visible::after {
+      color: #1f4f9f;
+      transform: translate(1px, -2px);
+    }
+
+    .affiliation {
+      margin-top: 0;
+      color: #334155;
+      font-size: 14px;
+      font-weight: 750;
+      line-height: 1.35;
+    }
+
+    .keywords {
+      margin-top: 0;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .bio {
+      margin-top: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .role {
+      display: inline-flex;
+      align-self: start;
+      justify-self: start;
+      margin-bottom: 0;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #075985;
+      background: #e0f2fe;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .links {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+    }
+
+    .links a {
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 750;
+    }
+
+    .organizers {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .organizer-card {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 12px 34px rgba(17, 24, 39, .06);
+    }
+
+    .organizer-card .portrait {
+      aspect-ratio: 1 / 1;
+    }
+
+    .organizer-body {
+      padding: 16px;
+    }
+
+    .organizer-card h3 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .organizer-card p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .cta {
+      display: grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 82px;
+      padding: 28px;
+      border-radius: var(--radius);
+      background: #0b1220;
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .cta h2 {
+      font-size: clamp(28px, 4vw, 42px);
+    }
+
+    .cta p {
+      color: rgba(255, 255, 255, .74);
+      margin: 12px 0 0;
+    }
+
+    .cta-panel {
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(35, 100, 255, .28), rgba(16, 184, 199, .18)),
+        rgba(255, 255, 255, .06);
+    }
+
+    footer {
+      padding: 30px 0 44px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    @media (max-width: 900px) {
+      .stats,
+      .topic-grid,
+      .people-grid,
+      .organizers,
+      .cta,
+      .section-head {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .hero {
+        min-height: 720px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .nav-inner {
+        align-items: center;
+        min-height: 60px;
+      }
+
+      .nav-links {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        overflow-x: auto;
+        max-width: 100%;
+        scrollbar-width: none;
+      }
+
+      .nav-links::-webkit-scrollbar {
+        display: none;
+      }
+
+      .hero {
+        min-height: calc(100svh - 60px);
+      }
+
+      .stats,
+      .topic-grid,
+      .people-grid,
+      .organizers,
+      .cta,
+      .section-head {
+        grid-template-columns: 1fr;
+      }
+
+      .schedule-item {
+        grid-template-columns: 1fr;
+        gap: 4px;
+      }
+
+      .person-body {
+        grid-template-rows: auto;
+      }
+
+      section {
+        padding: 58px 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a class="brand" href="index.html" aria-label="DPGAI 2026 home"><span class="mark" aria-hidden="true"></span>DPGAI 2026</a>
+      <div class="nav-links">
+        <a href="#overview">Overview</a>
+        <a href="#speakers">Speakers</a>
+        <a href="#schedule">Schedule</a>
+        <a href="#organizers">Organizers</a>
+        <a href="#attend">Attend</a>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div class="hero-inner">
+      <div class="eyebrow">SIGGRAPH 2026 Technical Workshop · Los Angeles</div>
+      <h1>Differentiable Physics for Graphics and AI</h1>
+      <p class="hero-subtitle">A half-day forum on simulation as an optimization, learning, and generation primitive across graphics, robotics, 3D vision, design, and fabrication.</p>
+      <div class="hero-actions">
+        <a class="button" href="#schedule">View Schedule</a>
+        <a class="button secondary" href="mailto:minchernl@gmail.com">Contact Organizers</a>
+        <a class="button secondary" href="https://docs.google.com/forms/d/e/1FAIpQLSfpCxEKzYIruGO5SKtUNbVwhQWHpQuVMjK9xSDLREgnOi4U9A/viewform" target="_blank" rel="noopener">Propose a Future Talk</a>
+      </div>
+    </div>
+  </header>
+
+  <div class="stats" aria-label="Workshop highlights">
+    <div class="stat"><span>Date</span><b>Monday, July 20</b></div>
+    <div class="stat"><span>Time</span><b>2:00-5:30 PM</b></div>
+    <div class="stat"><span>Room</span><b>406 AB</b></div>
+    <div class="stat"><span>Duration</span><b>3.5 hours</b></div>
+  </div>
+
+  <main>
+    <section id="overview">
+      <div class="section-head">
+        <h2>Why This Workshop</h2>
+        <p class="lead">Differentiable physics is moving from a specialized simulation technique into a shared substrate for graphics, physical AI, reconstruction, optimization, and fabrication.</p>
+      </div>
+      <div class="topic-grid">
+        <article class="topic">
+          <div class="stripe"></div>
+          <h3>Differentiable simulation</h3>
+          <p>Methods for optimizing through elastic bodies, cloth, fluids, articulated systems, contact, friction, and other dynamics central to graphics and robotics.</p>
+        </article>
+        <article class="topic">
+          <div class="stripe"></div>
+          <h3>Physical representations</h3>
+          <p>Bridging the gap between images, meshes, neural fields, generated assets, and the simulation-ready geometry, constraints, and material parameters needed for computation.</p>
+        </article>
+        <article class="topic">
+          <div class="stripe"></div>
+          <h3>Scalable systems</h3>
+          <p>GPU programming, robust solvers, parallel simulation environments, and differentiable frameworks that make optimization and learning loops feasible at useful scale.</p>
+        </article>
+        <article class="topic">
+          <div class="stripe"></div>
+          <h3>Various applications</h3>
+          <p>Applications in system identification, control, generative modeling, digital fabrication, garment and scene understanding, and embodied interaction with the physical world.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="speakers">
+      <div class="section-head">
+        <h2>Speakers</h2>
+        <p class="lead">The keynote and lightning speakers are researchers working across avatar systems, robotics, GPU simulation, geometry processing, physical AI, generative content creation, and fabrication.</p>
+      </div>
+      <div class="people-grid">
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/tuur-wide.jpg" alt="Tuur Stuyck"></div>
+          <div class="person-body">
+            <span class="role">Keynote</span>
+            <h3><a class="name-link" href="https://tuurstuyck.github.io/">Tuur Stuyck</a></h3>
+            <div class="affiliation">Senior Manager, Robotics · NVIDIA</div>
+            <div class="keywords">cloth simulation · robotics · avatars · differentiable dynamics</div>
+            <div class="bio">Leads simulation work spanning robotics, high-performance graphics, machine learning, and virtual avatars.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/ming.png" alt="Ming Lin"></div>
+          <div class="person-body">
+            <span class="role">Keynote</span>
+            <h3><a class="name-link" href="https://www.cs.umd.edu/people/lin">Ming Lin</a></h3>
+            <div class="affiliation">Professor · University of Maryland</div>
+            <div class="keywords">physics-based interaction · robotics · haptics · simulation</div>
+            <div class="bio">A leading voice in physically based modeling, real-time interaction, robotics, haptics, and virtual environments.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/miles.jpg" alt="Miles Macklin"></div>
+          <div class="person-body">
+            <span class="role">Keynote</span>
+            <h3><a class="name-link" href="https://developer.nvidia.com/blog/author/mmacklin/">Miles Macklin</a></h3>
+            <div class="affiliation">Senior Director · NVIDIA</div>
+            <div class="keywords">GPU simulation · Warp · Isaac · differentiable programming</div>
+            <div class="bio">Builds robust GPU frameworks for simulation and differentiable programming used in graphics and robotics workflows.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/denis-zorin.png" alt="Denis Zorin"></div>
+          <div class="person-body">
+            <span class="role">Keynote</span>
+            <h3><a class="name-link" href="https://cims.nyu.edu/people/profiles/ZORIN_Denis.html">Denis Zorin</a></h3>
+            <div class="affiliation">Silver Professor · NYU Courant</div>
+            <div class="keywords">geometry processing · simulation · scientific computing</div>
+            <div class="bio">Works on geometric modeling, multiresolution surface representations, fluid and solid simulation, and computer graphics.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/guying.jpg" alt="Guying Lin"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://carrie-lin.github.io/">Guying Lin</a></h3>
+            <div class="affiliation">PhD Student · CMU</div>
+            <div class="keywords">physics-augmented 3D generation · vision · neural fields</div>
+            <div class="bio">Studies physics-augmented reconstruction and generation, including physically plausible text-to-3D scene creation.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/yunuo.png" alt="Yunuo Chen"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://yunuoch.github.io/">Yunuo Chen</a></h3>
+            <div class="affiliation">Postdoctoral Scholar · UCLA</div>
+            <div class="keywords">physics-aware generation · simulation · visual computing</div>
+            <div class="bio">Works on physics-based simulation and generative models that preserve spatial, temporal, and physical structure.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/kemeng.jpg" alt="Kemeng Huang"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://kemenghuang.github.io/">Kemeng Huang</a></h3>
+            <div class="affiliation">PhD Candidate · HKU</div>
+            <div class="keywords">GPU IPC · Libuipc · contact · high-performance simulation</div>
+            <div class="bio">Develops GPU-accelerated Incremental Potential Contact methods for robust, accurate, differentiable simulation.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/dewen.jpg" alt="Dewen Guo"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://www.linkedin.com/in/dewen-guo-640424121/">Dewen Guo</a></h3>
+            <div class="affiliation">Postdoc · University of Utah</div>
+            <div class="keywords">solids and fluids · GPU optimization · digital fashion</div>
+            <div class="bio">Develops scalable optimization methods for solids, fluids, coupled systems, real-time fashion, and multibody dynamics.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/yingjiang.png" alt="Ying Jiang"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://yingjiang96.github.io/">Ying Jiang</a></h3>
+            <div class="affiliation">Postdoctoral Researcher · NVIDIA</div>
+            <div class="keywords">human-AI creation · generative physical AI · embodied AI</div>
+            <div class="bio">Builds geometry- and physics-guided generative systems for 2D, 3D, and 4D content creation and physical world modeling.</div>
+          </div>
+        </article>
+        <article class="person">
+          <div class="portrait"><img src="assets/speakers/yifei.jpg" alt="Yifei Li"></div>
+          <div class="person-body">
+            <span class="role">Lightning</span>
+            <h3><a class="name-link" href="https://people.csail.mit.edu/liyifei/">Yifei Li</a></h3>
+            <div class="affiliation">PhD Candidate · MIT CSAIL</div>
+            <div class="keywords">physical AI · differentiable simulation · computational design</div>
+            <div class="bio">Combines physics simulation, optimization, and learning so AI systems can reason about and act on physical dynamics.</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section id="schedule">
+      <div class="section-head">
+        <h2>Schedule</h2>
+        <p class="lead">Monday, July 20, 2:00-5:30 PM, Room 406 AB. Keynotes include 30 minutes of talk plus 5 minutes of Q&A; lightning talks include 5 minutes of talk plus 1 minute of Q&A.</p>
+      </div>
+      <div class="schedule">
+        <article class="schedule-item">
+          <div class="time">2:00-2:05 PM</div>
+          <div><h3>Opening</h3><p>Minchen Li</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">2:05-2:40 PM</div>
+          <div><h3>Keynote 1</h3><p>Tuur Stuyck</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">2:40-3:00 PM</div>
+          <div><h3>Lightning Talks I</h3><p>Guying Lin, Yunuo Chen, Kemeng Huang</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">3:00-3:35 PM</div>
+          <div><h3>Keynote 2</h3><p>Ming Lin</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">3:35-4:10 PM</div>
+          <div><h3>Keynote 3</h3><p>Miles Macklin</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">4:10-4:30 PM</div>
+          <div><h3>Lightning Talks II</h3><p>Dewen Guo, Ying Jiang, Yifei Li</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">4:30-5:05 PM</div>
+          <div><h3>Keynote 4</h3><p>Denis Zorin</p></div>
+        </article>
+        <article class="schedule-item">
+          <div class="time">5:05-5:30 PM</div>
+          <div><h3>Freeform Discussion</h3><p>Open problems, benchmarks, practical barriers, and collaboration opportunities.</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="organizers">
+      <div class="section-head">
+        <h2>Organizers</h2>
+        <p class="lead">The organizing team connects simulation, graphics systems, robotics, physical AI, and differentiable computation across academia and industry.</p>
+      </div>
+      <div class="organizers">
+        <article class="organizer-card">
+          <div class="portrait"><img src="assets/speakers/minchen.jpg" alt="Minchen Li"></div>
+          <div class="organizer-body"><h3><a class="name-link" href="https://www.cs.cmu.edu/~minchenl/">Minchen Li</a></h3><p>Assistant Professor · CMU</p><p>Advisor · Genesis AI</p></div>
+        </article>
+        <article class="organizer-card">
+          <div class="portrait"><img src="assets/speakers/chenfanfu.jpg" alt="Chenfanfu Jiang"></div>
+          <div class="organizer-body"><h3><a class="name-link" href="https://www.math.ucla.edu/~cffjiang/">Chenfanfu Jiang</a></h3><p>Professor · UCLA</p></div>
+        </article>
+        <article class="organizer-card">
+          <div class="portrait"><img src="assets/speakers/yin.jpg" alt="Yin Yang"></div>
+          <div class="organizer-body"><h3><a class="name-link" href="https://www.cs.utah.edu/~yyang/">Yin Yang</a></h3><p>Associate Professor · University of Utah</p></div>
+        </article>
+        <article class="organizer-card">
+          <div class="portrait"><img src="assets/speakers/tuur-wide.jpg" alt="Tuur Stuyck"></div>
+          <div class="organizer-body"><h3><a class="name-link" href="https://tuurstuyck.github.io/">Tuur Stuyck</a></h3><p>Senior Manager, Robotics · NVIDIA</p></div>
+        </article>
+      </div>
+    </section>
+
+    <section id="attend" class="cta" aria-label="Attend">
+      <div>
+        <h2>Bring physics into the loop.</h2>
+        <p>DPGAI is for researchers, practitioners, and students who want differentiable simulation to connect pixels, geometry, materials, policies, and fabrication into one editable physical pipeline.</p>
+      </div>
+      <div class="cta-panel">
+        <strong>Monday, July 20 · 2:00-5:30 PM · Room 406 AB</strong>
+        <p>Join us for four keynotes, two lightning sessions, and a closing discussion on the algorithms, systems, benchmarks, and representations needed for differentiable physics in graphics and AI.</p>
+        <div class="hero-actions">
+          <a class="button" href="mailto:minchernl@gmail.com">Ask a Question</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Differentiable Physics for Graphics and AI · SIGGRAPH 2026 Technical Workshop · Contact: <a href="mailto:minchernl@gmail.com">minchernl@gmail.com</a>
+  </footer>
+</body>
+</html>
